@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Logs{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white"><h4>Activity Log</h4></div>
+    <div class="card-body">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mb-3">Back</a>
+        {% if logs %}
+        <table class="table table-striped">
+            <thead>
+                <tr><th>Timestamp</th><th>Action</th><th>Details</th><th>IP</th></tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td><span class="badge bg-primary">{{ log.action }}</span></td>
+                    <td>{{ log.details or 'N/A' }}</td>
+                    <td>{{ log.ip_address }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="alert alert-info">No logs</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

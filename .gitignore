@@ -1,0 +1,32 @@
+# Virtual environment
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads and logs
+uploads/*
+!uploads/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Flask
+instance/
