@@ -50,10 +50,11 @@ cloud-file-exchange/
 ├── uploads/ # User uploaded files
 └── logs/ # Application logs
 ## Team Members
-- [Your Name Here]
-- [Team Member 2]
-- [Team Member 3]
-- [Team Member 4]
+- Valeriia Balatska
+- Vladyslav Dubenchuk
+- Szymon Mela
+- Marcin Kaczmarek
+- Mateusz Mrowicki
 
 ## License
 Educational project for Cloud Computing Systems course.
