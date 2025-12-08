@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Share File{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="bi bi-share"></i> Share: {{ file.original_filename }}</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mb-3">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+                
+                <form method="POST" class="mb-4">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Share with User</label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="Enter username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="can_read" id="can_read" checked>
+                            <label class="form-check-label" for="can_read">
+                                <i class="bi bi-eye"></i> Read (Download)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="can_write" id="can_write">
+                            <label class="form-check-label" for="can_write">
+                                <i class="bi bi-pencil"></i> Write (Upload new version)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="can_delete" id="can_delete">
+                            <label class="form-check-label" for="can_delete">
+                                <i class="bi bi-trash"></i> Delete
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-share"></i> Share File
+                    </button>
+                </form>
+                
+                {% if permissions %}
+                <hr>
+                <h6>Currently Shared With:</h6>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Permissions</th>
+                            <th>Shared On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for perm in permissions %}
+                        <tr>
+                            <td>{{ perm.user.username }}</td>
+                            <td>
+                                {% if perm.can_read %}<span class="badge bg-info">Read</span>{% endif %}
+                                {% if perm.can_write %}<span class="badge bg-warning">Write</span>{% endif %}
+                                {% if perm.can_delete %}<span class="badge bg-danger">Delete</span>{% endif %}
+                            </td>
+                            <td>{{ perm.granted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

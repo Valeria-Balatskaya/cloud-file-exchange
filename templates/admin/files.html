@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}All Files{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-folder"></i> All Files</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Filename</th>
+                        <th>Owner</th>
+                        <th>Version</th>
+                        <th>Size</th>
+                        <th>Upload Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in files %}
+                    <tr>
+                        <td>{{ file.id }}</td>
+                        <td title="{{ file.original_filename }}">
+                            <i class="bi bi-file-earmark"></i>
+                            {{ file.original_filename[:30] }}{% if file.original_filename|length > 30 %}...{% endif %}
+                        </td>
+                        <td>{{ file.owner.username }}</td>
+                        <td><span class="badge bg-info">v{{ file.version }}</span></td>
+                        <td>{{ "%.2f"|format(file.file_size / 1024) }} KB</td>
+                        <td>{{ file.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('download_file', file_id=file.id) }}" 
+                               class="btn btn-sm btn-outline-primary" title="Download">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            <form action="{{ url_for('delete_file', file_id=file.id) }}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Delete {{ file.original_filename }}?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not files %}
+        <p class="text-muted text-center">No files in the system yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

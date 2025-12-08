@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}System Logs{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-journal-text"></i> System Logs</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- Filter Controls -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Filter by Action</label>
+                <select class="form-select" id="actionFilter" onchange="filterLogs()">
+                    <option value="">All Actions</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                    <option value="upload">Upload</option>
+                    <option value="download">Download</option>
+                    <option value="delete">Delete</option>
+                    <option value="share">Share</option>
+                    <option value="register">Register</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Filter by User</label>
+                <input type="text" class="form-control" id="userFilter" placeholder="Enter username..." onkeyup="filterLogs()">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-outline-secondary" onclick="clearFilters()">Clear Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="logsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Details</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr data-action="{{ log.action }}" data-user="{{ log.user.username if log.user else '' }}">
+                        <td>{{ log.id }}</td>
+                        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ log.user.username if log.user else 'Unknown' }}</td>
+                        <td>
+                            {% if log.action == 'login' %}
+                            <span class="badge bg-success">{{ log.action }}</span>
+                            {% elif log.action == 'logout' %}
+                            <span class="badge bg-secondary">{{ log.action }}</span>
+                            {% elif log.action == 'upload' %}
+                            <span class="badge bg-primary">{{ log.action }}</span>
+                            {% elif log.action == 'download' %}
+                            <span class="badge bg-info">{{ log.action }}</span>
+                            {% elif log.action == 'delete' %}
+                            <span class="badge bg-danger">{{ log.action }}</span>
+                            {% elif log.action == 'share' %}
+                            <span class="badge bg-warning">{{ log.action }}</span>
+                            {% else %}
+                            <span class="badge bg-dark">{{ log.action }}</span>
+                            {% endif %}
+                        </td>
+                        <td title="{{ log.details }}">
+                            {{ log.details[:50] }}{% if log.details|length > 50 %}...{% endif %}
+                        </td>
+                        <td>{{ log.ip_address }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not logs %}
+        <p class="text-muted text-center">No logs recorded yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterLogs() {
+    const actionFilter = document.getElementById('actionFilter').value.toLowerCase();
+    const userFilter = document.getElementById('userFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('#logsTable tbody tr');
+    
+    rows.forEach(row => {
+        const action = row.dataset.action.toLowerCase();
+        const user = row.dataset.user.toLowerCase();
+        
+        const matchesAction = !actionFilter || action === actionFilter;
+        const matchesUser = !userFilter || user.includes(userFilter);
+        
+        row.style.display = matchesAction && matchesUser ? '' : 'none';
+    });
+}
+
+function clearFilters() {
+    document.getElementById('actionFilter').value = '';
+    document.getElementById('userFilter').value = '';
+    filterLogs();
+}
+</script>
+{% endblock %}

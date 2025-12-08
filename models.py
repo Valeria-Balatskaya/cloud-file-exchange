@@ -39,6 +39,32 @@ class File(db.Model):
     def __repr__(self):
         return f'<File {self.original_filename} v{self.version}>'
 
+
+class FilePermission(db.Model):
+    """Granular permissions for file sharing between users."""
+    __tablename__ = 'file_permissions'
+    id = db.Column(db.Integer, primary_key=True)
+    file_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    can_read = db.Column(db.Boolean, default=True)
+    can_write = db.Column(db.Boolean, default=False)
+    can_delete = db.Column(db.Boolean, default=False)
+    granted_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    granted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    file = db.relationship('File', backref=db.backref('permissions', cascade='all, delete-orphan'))
+    user = db.relationship('User', foreign_keys=[user_id], backref='file_permissions')
+    granter = db.relationship('User', foreign_keys=[granted_by])
+    
+    __table_args__ = (db.UniqueConstraint('file_id', 'user_id', name='unique_file_user_permission'),)
+    
+    def __repr__(self):
+        perms = []
+        if self.can_read: perms.append('R')
+        if self.can_write: perms.append('W')
+        if self.can_delete: perms.append('D')
+        return f'<Permission {"/".join(perms)} on file {self.file_id} for user {self.user_id}>'
+
 class LogBook(db.Model):
     __tablename__ = 'logbook'
     id = db.Column(db.Integer, primary_key=True)
