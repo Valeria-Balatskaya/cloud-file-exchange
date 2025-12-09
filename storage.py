@@ -1,11 +1,10 @@
-"""Storage backend abstractions for local disk and AWS S3."""
+"""AWS S3 storage backend for cloud file exchange."""
 import logging
-import os
 from dataclasses import dataclass
 from typing import Optional
 from urllib.parse import quote
 
-from flask import redirect, send_from_directory
+from flask import redirect
 
 try:
     import boto3
@@ -23,53 +22,7 @@ class StorageResult:
     key: str
 
 
-class StorageBackend:
-    def save(self, file_storage, filename: str, user_id: int) -> StorageResult:
-        raise NotImplementedError
-
-    def delete(self, key: str) -> None:
-        raise NotImplementedError
-
-    def download(self, file_record):
-        raise NotImplementedError
-
-    def get_file_content(self, file_record) -> Optional[bytes]:
-        """Get raw file content for ZIP packaging."""
-        raise NotImplementedError
-
-
-class LocalStorage(StorageBackend):
-    def __init__(self, upload_folder: str):
-        self.upload_folder = upload_folder
-
-    def save(self, file_storage, filename: str, user_id: int) -> StorageResult:
-        target_path = os.path.join(self.upload_folder, filename)
-        os.makedirs(self.upload_folder, exist_ok=True)
-        file_storage.save(target_path)
-        return StorageResult(key=target_path)
-
-    def delete(self, key: str) -> None:
-        if key and os.path.exists(key):
-            os.remove(key)
-
-    def download(self, file_record):
-        return send_from_directory(
-            self.upload_folder,
-            file_record.filename,
-            as_attachment=True,
-            download_name=file_record.original_filename,
-        )
-
-    def get_file_content(self, file_record) -> Optional[bytes]:
-        """Get raw file content for ZIP packaging."""
-        file_path = os.path.join(self.upload_folder, file_record.filename)
-        if os.path.exists(file_path):
-            with open(file_path, 'rb') as f:
-                return f.read()
-        return None
-
-
-class S3Storage(StorageBackend):
+class S3Storage:
     def __init__(
         self,
         bucket_name: str,
@@ -186,20 +139,18 @@ class S3Storage(StorageBackend):
             return None
 
 
-def get_storage_backend(config) -> StorageBackend:
-    backend_name = config.get("STORAGE_BACKEND", "local").lower()
-    if backend_name == "s3":
-        bucket_name = config.get("S3_BUCKET_NAME")
-        if not bucket_name:
-            log.warning("S3 storage selected but S3_BUCKET_NAME is missing; falling back to local storage")
-        else:
-            return S3Storage(
-                bucket_name=bucket_name,
-                region_name=config.get("S3_REGION", "us-east-1"),
-                access_key=config.get("AWS_ACCESS_KEY_ID"),
-                secret_key=config.get("AWS_SECRET_ACCESS_KEY"),
-                session_token=config.get("AWS_SESSION_TOKEN"),
-                endpoint_url=config.get("S3_ENDPOINT_URL"),
-                presigned_ttl=config.get("S3_PRESIGNED_TTL", 900),
-            )
-    return LocalStorage(config["UPLOAD_FOLDER"])
+def get_storage_backend(config) -> S3Storage:
+    """Initialize AWS S3 storage backend."""
+    bucket_name = config.get("S3_BUCKET_NAME")
+    if not bucket_name:
+        raise ValueError("S3_BUCKET_NAME is required for AWS S3 storage")
+    
+    return S3Storage(
+        bucket_name=bucket_name,
+        region_name=config.get("S3_REGION", "eu-north-1"),
+        access_key=config.get("AWS_ACCESS_KEY_ID"),
+        secret_key=config.get("AWS_SECRET_ACCESS_KEY"),
+        session_token=config.get("AWS_SESSION_TOKEN"),
+        endpoint_url=config.get("S3_ENDPOINT_URL"),
+        presigned_ttl=config.get("S3_PRESIGNED_TTL", 900),
+    )

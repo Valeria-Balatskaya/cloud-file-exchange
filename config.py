@@ -12,19 +12,16 @@ class Config:
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
-    # Database: Use DATABASE_URL for cloud (PostgreSQL), fallback to local SQLite
+    # Database: Supabase PostgreSQL (required)
     DATABASE_URL = os.environ.get('DATABASE_URL')
-    if DATABASE_URL:
-        # Supabase/Heroku use postgres://, SQLAlchemy needs postgresql://
-        if DATABASE_URL.startswith('postgres://'):
-            DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
-        SQLALCHEMY_DATABASE_URI = DATABASE_URL
-    else:
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'file_exchange.db')
+    if not DATABASE_URL:
+        raise ValueError('DATABASE_URL environment variable is required for Supabase PostgreSQL connection')
+    # Supabase/Heroku use postgres://, SQLAlchemy needs postgresql://
+    if DATABASE_URL.startswith('postgres://'):
+        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
-    LOG_FOLDER = os.path.join(BASE_DIR, 'logs')
     MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100 MB max file size
     # Allow all common file types - add more as needed
     ALLOWED_EXTENSIONS = {
@@ -49,17 +46,14 @@ class Config:
     }
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
 
-    STORAGE_BACKEND = os.environ.get('STORAGE_BACKEND', 's3')
+    # Storage: AWS S3 (required)
     S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
-    S3_REGION = os.environ.get('S3_REGION', 'us-east-1')
+    S3_REGION = os.environ.get('S3_REGION', 'eu-north-1')
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
     AWS_SESSION_TOKEN = os.environ.get('AWS_SESSION_TOKEN')
     S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
     S3_PRESIGNED_TTL = int(os.environ.get('S3_PRESIGNED_TTL', '900'))
 
-    if STORAGE_BACKEND.lower() == 'local':
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    elif not S3_BUCKET_NAME:
-        log.warning('STORAGE_BACKEND is s3 but S3_BUCKET_NAME is missing; uploads will fail until configured.')
-    os.makedirs(LOG_FOLDER, exist_ok=True)
+    if not S3_BUCKET_NAME:
+        raise ValueError('S3_BUCKET_NAME environment variable is required for AWS S3 storage')

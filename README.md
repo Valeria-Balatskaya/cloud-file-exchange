@@ -54,8 +54,8 @@ A secure cloud-based file exchange system with user authentication, file version
 
 ### Prerequisites
 - Python 3.8+
-- AWS Account (for S3)
-- Supabase Account (for PostgreSQL) - or use local SQLite
+- AWS Account (for S3 storage)
+- Supabase Account (for PostgreSQL database)
 
 ### Installation
 
@@ -84,11 +84,10 @@ A secure cloud-based file exchange system with user authentication, file version
    
    Edit `.env` with your credentials:
    ```env
-   # Database (leave empty for local SQLite)
-   DATABASE_URL=postgresql://user:pass@host:port/db
+   # Database: Supabase PostgreSQL (required)
+   DATABASE_URL=postgresql://postgres.xxxx:pass@aws-1-region.pooler.supabase.com:6543/postgres
    
-   # AWS S3
-   STORAGE_BACKEND=s3
+   # AWS S3 Storage (required)
    S3_BUCKET_NAME=your-bucket
    S3_REGION=eu-north-1
    AWS_ACCESS_KEY_ID=your-key
@@ -101,14 +100,6 @@ A secure cloud-based file exchange system with user authentication, file version
    ```
 
 6. **Open browser:** http://127.0.0.1:5000
-
-### Local Development (No Cloud)
-
-To run without cloud services:
-```env
-DATABASE_URL=           # Empty = SQLite
-STORAGE_BACKEND=local   # Files stored in uploads/
-```
 
 ## Default Login
 
