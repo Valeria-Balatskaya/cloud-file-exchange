@@ -113,7 +113,7 @@ cloud-file-exchange/
 ├── app.py              # Main Flask application & routes
 ├── models.py           # SQLAlchemy database models
 ├── config.py           # Configuration settings
-├── storage.py          # S3/Local storage abstraction
+├── storage.py          # AWS S3 storage backend
 ├── requirements.txt    # Python dependencies
 ├── .env                # Environment variables (not in git)
 ├── .env.example        # Environment template
